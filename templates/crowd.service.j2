@@ -1,0 +1,14 @@
+#jinja2: trim_blocks:False
+[Unit]
+Description=Crowd Identity management for web apps
+After=network.target
+
+[Service]
+Type=forking
+User={% if crowd_port == 80 %}root{% else %}{{ crowd_run_user }}{% endif %}
+PIDFile={{ crowd_install_directory }}/apache-tomcat/work/catalina.pid
+ExecStart={{ crowd_install_directory }}/start_crowd.sh
+ExecStop={{ crowd_install_directory }}/stop_crowd.sh
+
+[Install]
+WantedBy=multi-user.target

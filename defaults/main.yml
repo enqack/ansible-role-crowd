@@ -1,0 +1,34 @@
+---
+# defaults file for enqack.crowd
+
+crowd_version: 3.4.5
+
+crowd_pkg: atlassian-crowd-{{ crowd_version }}.tar.gz
+
+crowd_download_url: https://www.atlassian.com/software/crowd/downloads/binary/{{ crowd_pkg }}
+
+crowd_context: /crowd
+
+crowdid_context: /openidserver
+
+crowd_openid_client_context: ''
+
+crowd_demo_context: '/demo'
+
+crowd_splash_context: ROOT
+
+crowd_home_directory: /var/atlassian/application-data/crowd
+
+crowd_install_directory: /opt/atlassian/crowd
+
+crowd_database_url: postgresql://crowd_user:jellyfish@postgresql:5432/crowd_db
+
+crowd_run_user: crowd
+
+crowd_run_group: crowd
+
+crowd_port: 8095
+
+crowd_redirect_port: 8443
+
+crowd_tomcat_shutdown_port: 8020

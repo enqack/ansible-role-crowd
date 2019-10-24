@@ -1,0 +1,33 @@
+# {{ ansible_managed }}
+
+# Modify the attributes of this file to quickly adjust the deployment values of Crowd.
+
+# The Hibernate database dialect to use. See https://confluence.atlassian.com/display/CROWD/Connecting+Crowd+to+a+Database
+hibernate.dialect=org.hibernate.dialect.HSQLDialect
+
+# The http port you wish to run crowd from, ie: http://localhost:8095/crowd
+crowd.tomcat.connector.port={{ crowd_port }}
+
+# Tomcat requires a unique port for shutdown
+crowd.tomcat.shutdown.port={{ crowd_tomcat_shutdown_port }}
+
+# Crowd context root
+{% if crowd_port == 80 %}
+crowd.url=http://localhost{{ crowd_context }}
+{% else %}
+crowd.url=http://localhost:{{ crowd_port }}{{ crowd_context }}
+{% endif %}
+
+# Demo context root
+{% if crowd_port == 80 %}
+demo.url=http://localhost{{ crowd_demo_context }}
+{% else %}
+demo.url=http://localhost:{{ crowd_port }}{{ crowd_demo_context }}
+{% endif %}
+
+# OpenID server context root
+{% if crowd_port == 80 %}
+openidserver.url=http://localhost{{ crowdid_context }}
+{% else %}
+openidserver.url=http://localhost:{{ crowd_port }}{{ crowdid_context }}
+{% endif %}

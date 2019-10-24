@@ -1,0 +1,92 @@
+---
+# tasks file for enqack.crowd
+
+- name: Create run user account
+  user:
+    name: "{{ crowd_run_user }}"
+    groups: atlassian
+    append: true
+
+- name: Create Crowd install directory
+  file:
+    path: "{{ crowd_install_directory }}"
+    owner: "{{ crowd_run_user }}"
+    group: "{{ crowd_run_group }}"
+    recurse: true
+
+- name: Check for existing Crowd archive (local)
+  stat:
+    path: "{{ role_path }}/files/{{ crowd_pkg }}"
+  become: false
+  run_once: true
+  register: package_check
+  delegate_to: 127.0.0.1
+
+- name: Download Crowd (local)
+  get_url:
+    url: "{{ crowd_download_url }}"
+    dest: "{{ role_path }}/files/{{ crowd_pkg }}"
+    force: true
+  become: false
+  run_once: true
+  delegate_to: 127.0.0.1
+  when: not package_check.stat.exists | bool
+
+- name: Extract Crowd
+  unarchive:
+    src: "{{ role_path }}/files/{{ crowd_pkg }}"
+    dest: "{{ crowd_install_directory }}"
+    extra_opts: --strip=1
+
+- name: Create webapps directory
+  file:
+    path: "{{ crowd_install_directory }}/webapps"
+    state: directory
+
+- name: Set splash context
+  copy:
+    src: "{{ role_path }}/files/splash-context.xml"
+    dest: "{{ crowd_install_directory }}/webapps/splash.xml"
+
+- name: Set Crowd home
+  copy:
+    dest: "{{ crowd_install_directory }}/crowd-webapp/WEB-INF/classes/crowd-init.properties"
+    content: crowd.home = {{ crowd_home_directory }}
+
+- name: Set permissions on install directory
+  file:
+    path: "{{ crowd_install_directory }}"
+    owner: "{{ crowd_run_user }}"
+    group: "{{ crowd_run_group }}"
+    recurse: true
+
+- name: Set permissions on home directory
+  file:
+    path: "{{ crowd_home_directory }}"
+    owner: "{{ crowd_run_user }}"
+    group: "{{ crowd_run_group }}"
+    recurse: true
+
+- name: Configure Tomcat
+  template:
+    src: "{{ role_path }}/templates/server.xml.j2"
+    dest: "{{ crowd_install_directory }}/apache-tomcat/conf/server.xml"
+    owner: "{{ crowd_run_user }}"
+    group: "{{ crowd_run_group }}"
+
+- name: Configure build properties
+  template:
+    src: "{{ role_path }}/templates/build.properties.j2"
+    dest: "{{ crowd_install_directory }}/build.properties"
+    owner: "{{ crowd_run_user }}"
+    group: "{{ crowd_run_group }}"
+
+- name: Run build script
+  shell: ./build.sh
+  args:
+    chdir: "{{ crowd_install_directory }}"
+
+# - name: Configure which webapps are enabled
+
+- name: Import systemd tasks
+  import_tasks: systemd.yml
